@@ -1,20 +1,44 @@
+
+
+
 import streamlit as st
 import pandas as pd
 import os
 
-st.set_page_config(layout="wide")
-
-st.title("📊 Manual Data Entry")
-
-st.markdown(
-    "Select a questionnaire variable and enter the frequency/count for each category."
+st.set_page_config(
+    page_title="Manual Data Entry",
+    layout="wide"
 )
 
+st.title("📊 Select Your Data variable")
+
 # =====================================================
-# QUESTIONNAIRE VARIABLES
+# YOUR QUESTIONNAIRE VARIABLES
 # =====================================================
 
 VARIABLES = {
+
+    "Gender": [
+        "Male",
+        "Female",
+        "Others"
+    ],
+
+    "School Type": [
+        "Government",
+        "Private"
+    ],
+
+    "Smoking": [
+        "Yes",
+        "No"
+    ],
+
+    "Alcohol": [
+        "Yes",
+        "No"
+    ],
+
 
     "Gender": [
         "Male",
@@ -170,86 +194,169 @@ VARIABLES = {
     ]
 }
 
+
+    # ADD ALL OTHER VARIABLES HERE
+
+
 # =====================================================
-# VARIABLE SELECTION
+# ENTRY TYPE
 # =====================================================
 
-selected_variable = st.selectbox(
-    "Select Variable",
-    list(VARIABLES.keys())
+entry_type = st.radio(
+    "Choose Data Entry Type",
+    [
+        "Questionnaire Variable",
+        "Custom Variable"
+    ]
 )
-
-st.subheader(f"Enter Counts for {selected_variable}")
-
-categories = VARIABLES[selected_variable]
 
 counts = {}
 
-for category in categories:
+# =====================================================
+# QUESTIONNAIRE VARIABLE
+# =====================================================
 
-    counts[category] = st.number_input(
-        f"{category}",
-        min_value=0,
-        value=0,
-        step=1
+if entry_type == "Questionnaire Variable":
+
+    selected_variable = st.selectbox(
+        "Select Variable",
+        list(VARIABLES.keys())
     )
 
+    st.subheader(
+        f"Enter Counts for {selected_variable}"
+    )
+
+    for category in VARIABLES[selected_variable]:
+
+        counts[category] = st.number_input(
+            category,
+            min_value=0,
+            value=0,
+            step=1,
+            key=category
+        )
+
 # =====================================================
-# GENERATE TABLE
+# CUSTOM VARIABLE
+# =====================================================
+
+else:
+
+    selected_variable = st.text_input(
+        "Custom Variable Name",
+        placeholder="Example: Blood Group"
+    )
+
+    num_categories = st.number_input(
+        "Number of Categories",
+        min_value=2,
+        max_value=50,
+        value=2
+    )
+
+    st.subheader(
+        "Enter Categories and Counts"
+    )
+
+    for i in range(num_categories):
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            category_name = st.text_input(
+                f"Category {i+1}",
+                key=f"cat_{i}"
+            )
+
+        with col2:
+
+            category_count = st.number_input(
+                f"Count {i+1}",
+                min_value=0,
+                value=0,
+                key=f"count_{i}"
+            )
+
+        if category_name.strip():
+
+            counts[category_name] = category_count
+
+# =====================================================
+# GENERATE DATASET
 # =====================================================
 
 if st.button("Generate Dataset"):
 
-    data = {
-        "Category": list(counts.keys()),
-        "Count": list(counts.values())
-    }
+    if not selected_variable:
 
-    df = pd.DataFrame(data)
-
-    total = df["Count"].sum()
-
-    if total > 0:
-        df["Percentage"] = round(
-            (df["Count"] / total) * 100,
-            2
+        st.error(
+            "Please enter/select a variable."
         )
+
+    elif len(counts) == 0:
+
+        st.error(
+            "Please enter categories."
+        )
+
     else:
-        df["Percentage"] = 0
 
-    st.success("Dataset Generated")
+        df = pd.DataFrame(
+            {
+                "Category": list(counts.keys()),
+                "Count": list(counts.values())
+            }
+        )
 
-    st.subheader("Frequency Table")
+        total = df["Count"].sum()
 
-    st.dataframe(
-        df,
-        use_container_width=True
-    )
+        if total > 0:
 
-    # Create folder
+            df["Percentage"] = round(
+                (df["Count"] / total) * 100,
+                2
+            )
 
-    os.makedirs(
-        "data/categorical",
-        exist_ok=True
-    )
+        else:
 
-    filename = selected_variable.replace(
-        " ",
-        "_"
-    )
+            df["Percentage"] = 0
 
-    df.to_excel(
-        f"data/categorical/{filename}.xlsx",
-        index=False
-    )
+        st.success(
+            "Dataset Generated Successfully"
+        )
 
-    st.success(
-        f"Saved as {filename}.xlsx"
-    )
+        st.subheader(
+            "Frequency Table"
+        )
 
-    st.subheader("Summary")
+        st.dataframe(
+            df,
+            use_container_width=True
+        )
 
-    st.metric(
-        "Total Participants",
-        int(total)
-    )
+        st.metric(
+            "Total Participants",
+            int(total)
+        )
+
+        os.makedirs(
+            "data/categorical",
+            exist_ok=True
+        )
+
+        filename = (
+            selected_variable
+            .replace(" ", "_")
+            .replace("/", "_")
+        )
+
+        df.to_excel(
+            f"data/categorical/{filename}.xlsx",
+            index=False
+        )
+
+        st.success(
+            f"Saved as {filename}.xlsx"
+        )
