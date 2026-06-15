@@ -82,7 +82,7 @@ with col2:
 with st.expander("Preview Dataset"):
     st.dataframe(
         df.head(),
-        width=True
+        use_container_width=True
     )
 
 # =====================================================
@@ -162,7 +162,7 @@ if analysis_type == "Categorical Analysis":
 
     st.dataframe(
         freq,
-        width=True
+        use_container_width=True
     )
 
     chart_type = st.selectbox(
@@ -186,7 +186,7 @@ if analysis_type == "Categorical Analysis":
 
         st.plotly_chart(
             fig,
-            width=True
+            use_container_width=True
         )
 
     elif chart_type == "Donut Chart":
@@ -201,7 +201,7 @@ if analysis_type == "Categorical Analysis":
 
         st.plotly_chart(
             fig,
-            width=True
+            use_container_width=True
         )
 
     elif chart_type == "Bar Chart":
@@ -216,7 +216,7 @@ if analysis_type == "Categorical Analysis":
 
         st.plotly_chart(
             fig,
-            width=True
+            use_container_width=True
         )
 
     elif chart_type == "Horizontal Bar Chart":
@@ -232,7 +232,7 @@ if analysis_type == "Categorical Analysis":
 
         st.plotly_chart(
             fig,
-            width=True
+            use_container_width=True
         )
 
 # =====================================================
@@ -310,7 +310,7 @@ elif analysis_type == "Numerical Analysis":
 
     st.dataframe(
         data.describe().to_frame(),
-        width=True
+        use_container_width=True
     )
 
     st.subheader("Histogram")
@@ -324,7 +324,7 @@ elif analysis_type == "Numerical Analysis":
 
     st.plotly_chart(
         hist,
-        width=True
+        use_container_width=True
     )
 
     st.subheader("Box Plot")
@@ -337,5 +337,5 @@ elif analysis_type == "Numerical Analysis":
 
     st.plotly_chart(
         box,
-        width=True
+        use_container_width=True
     )
